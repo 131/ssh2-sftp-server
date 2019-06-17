@@ -48,7 +48,6 @@ const modeLinux = (filename, filepath) => {
   }
 
   let user = 'user', group = 'user', uid = 1000;
-
   try {
     const stats = fs.statSync(filepath);
     const unixFilePermissions = (stats.mode & parseInt('777', 8)).toString(8);
