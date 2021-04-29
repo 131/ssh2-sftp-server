@@ -127,7 +127,7 @@ class SFTP {
     if(IS_WIN32)
       filename = pathLocalToRemote(pathRemoteToLocal(filename));
     else
-      filename = path.posix.normalize(filename);
+      filename = path.resolve(filename);
 
     logger.info('REALPATH normalize ', filename);
     this.sftpStream.name(reqid, [{filename}]);
@@ -245,11 +245,16 @@ class SFTP {
     if(flags != "w" && !fs.existsSync(filepath))
       return this.sftpStream.status(reqid, SFTP_STATUS_CODE.NO_SUCH_FILE);
 
-    var handle = fs.openSync(filepath, flags);
-    let stat = fs.statSync(filepath);
-    handle = Buffer.from([handle]);
-    this.openFiles[handle] = {filepath, flags, stat, pos : 0};
-    return this.sftpStream.handle(reqid, handle);
+    try {
+      var handle = fs.openSync(filepath, flags);
+      let stat = fs.statSync(filepath);
+      handle = Buffer.from([handle]);
+      this.openFiles[handle] = {filepath, flags, stat, pos : 0};
+      return this.sftpStream.handle(reqid, handle);
+    } catch(err) {
+      logger.error(err);
+      return this.sftpStream.status(reqid, errorCode(err.code));
+    }
   }
 }
 
