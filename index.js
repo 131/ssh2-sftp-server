@@ -1,5 +1,6 @@
 'use strict';
 
+const os      = require('os');
 const path    = require('path');
 const fs      = require('fs');
 
@@ -10,16 +11,22 @@ const pick      = require('mout/object/pick');
 
 const {getLogicalDisks, wslpath, winpath} = require('./utils/');
 
+const IS_WIN32 = os.platform() == "win32";
 //from stream scope
+
 var SFTP_OPEN_MODE, SFTP_STATUS_CODE;
 var flagsToString;
 
 function pathRemoteToLocal(remotepath) {
-  return winpath(remotepath);
+  if(IS_WIN32)
+    return winpath(remotepath);
+  return remotepath;
 }
 
 function pathLocalToRemote(localpath) {
-  return wslpath(localpath);
+  if(IS_WIN32)
+    return wslpath(localpath);
+  return localpath;
 }
 
 
@@ -117,8 +124,11 @@ class SFTP {
   _realpath(reqid, filename) {
     logger.info('realpath ', filename, pathRemoteToLocal(filename));
 
-    //filename = path.posix.normalize(filename);
-    filename = pathLocalToRemote(pathRemoteToLocal(filename));
+    if(IS_WIN32)
+      filename = pathLocalToRemote(pathRemoteToLocal(filename));
+    else
+      filename = path.posix.normalize(filename);
+
     logger.info('REALPATH normalize ', filename);
     this.sftpStream.name(reqid, [{filename}]);
   }
@@ -215,7 +225,7 @@ class SFTP {
 
     var names = [];
 
-    if(this.openFiles[handle].filepath == '/') {
+    if(IS_WIN32 && this.openFiles[handle].filepath == '/') {
       names = await getLogicalDisks();
       names = names.map((v) => modeLinux("", v));
     } else {
