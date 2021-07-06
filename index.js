@@ -14,8 +14,8 @@ const {getLogicalDisks, wslpath, winpath} = require('./utils/');
 const IS_WIN32 = os.platform() == "win32";
 //from stream scope
 
-var SFTP_OPEN_MODE, SFTP_STATUS_CODE;
-var flagsToString;
+const {flagsToString, OPEN_MODE : SFTP_OPEN_MODE, STATUS_CODE : SFTP_STATUS_CODE} = require('ssh2').utils.sftp;
+
 
 function pathRemoteToLocal(remotepath) {
   if(IS_WIN32)
@@ -82,10 +82,7 @@ const modeLinux = (filename, filepath) => {
 class SFTP {
 
   constructor(sftpStream) {
-
-    ({flagsToString} = sftpStream.constructor);
-    ({OPEN_MODE : SFTP_OPEN_MODE, STATUS_CODE : SFTP_STATUS_CODE} = sftpStream.constructor);
-
+    
     this.openFiles = {};
     this._handleCount = 0;
     this.sftpStream = sftpStream;
