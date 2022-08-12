@@ -41,7 +41,7 @@ support most of client requests:
 
 # Usage
 
-```
+```js
 "use strict";
 
 const fs         = require('fs');
@@ -55,9 +55,9 @@ new ssh2.Server({
     ctx.accept();
   }).on('ready', function() {
     client.on('session', (accept) => {
-      let session = accept();
-      session.on('sftp', function() {
-        var sftpStream = accept();
+      const session = accept();
+      session.on('sftp', (accept) => {
+        const sftpStream = accept();
         new SftpServer(sftpStream);
       });
     });
